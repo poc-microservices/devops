@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delivery-config
+  namespace: default
+data:
+  APPLICATION_ROOT: /delivery

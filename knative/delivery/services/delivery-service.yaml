@@ -1,0 +1,41 @@
+apiVersion: serving.knative.dev/v1alpha1 # Current version of Knative
+kind: Service
+metadata:
+  name: delivery # The name of the app
+  namespace: default # The namespace the app will use
+  labels:
+    app: delivery
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            # Disable scale to zero with a minScale of 1.
+            autoscaling.knative.dev/minScale: "1"
+            # Limit scaling to 100 pods.
+            autoscaling.knative.dev/maxScale: "1"
+        spec:
+          container:
+            image: docker.io/pock8s/inventory-api:dev # The URL to the image of the app
+            env:
+            # Define the environment variable
+            - name: APPLICATION_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  # The ConfigMap containing the value you want to assign to APPLICATION_ROOT
+                  name: delivery-config
+                  key: APPLICATION_ROOT
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "100m"
+              limits:
+                memory: "128Mi"
+                cpu: "200m"
+            command: ["bin/flask-dev.sh"]
+            ports:
+              - containerPort: 5000
+            livenessProbe:
+              httpGet:
+                path: /health
